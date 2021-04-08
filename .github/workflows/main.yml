@@ -10,21 +10,6 @@ on:
 
 jobs:
   main:
-    name: Test, Build & Deploy
-    runs-on: ubuntu-latest
-
-    env:name: rollback
-
-
-on:
-  workflow_dispatch:
-    inputs:
-      release:
-        description: 'Name of version  (ie 5.5.0)'
-        required: true
-
-jobs:
-  main:
     name: Rollback
     runs-on: ubuntu-latest
 
@@ -52,38 +37,6 @@ jobs:
       - name: Slack Notification
         uses: sonots/slack-notice-action@v3
         if: always()
-        with:
-          status: ${{ job.status }}
-          title: Rollback to ${{ github.event.inputs.release }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: 'https://hooks.slack.com/services/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'
-
-      CI: true
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-    timeout-minutes: 20
-
-    steps:
-      - name: Clean up running jobs
-        uses: rokroskar/workflow-run-cleanup-action@v0.2.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Rollback
-        if: endsWith(github.ref, 'production')
-        run: |
-          node tools/rollback -b amaro.com -d E2M0VTEPLXC4LA -v ${{ github.event.inputs.release }}
-
-      - name: Update Sentry
-        if: endsWith(github.ref, 'production')
-        run: |
-          curl https://sentry.io/api/hooks/release/builtin/165365/69fc94313e77038d294b544d0082d2bafc9d2387fa8db76ca467111ba42f5fa0/ -X POST -H 'Content-Type: application/json' -d '{"version": "'"${{ github.event.inputs.release }}"'"}'
-
-      - name: Slack Notification
-        uses: sonots/slack-notice-action@v3
-        if: always() && endsWith(github.ref, 'production')
         with:
           status: ${{ job.status }}
           title: Rollback to ${{ github.event.inputs.release }}
