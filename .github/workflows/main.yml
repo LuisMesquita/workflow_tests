@@ -1,10 +1,12 @@
 name: rollback
 
+
 on:
   workflow_dispatch:
-    input:
+    inputs:
       release:
-        description: 'Version to rollback'
+        description: 'Name of version  (ie 5.5.0)'
+        required: true
 
 jobs:
   main:
